@@ -26,7 +26,8 @@ function App() {
       if (file) formData.append("resume", file);
 
       const res = await axios.post(
-        "http://localhost:5000/analyze",
+        // "http://localhost:5000/analyze",
+        "https://skilldna-backend.onrender.com/analyze",
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
