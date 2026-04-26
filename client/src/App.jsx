@@ -27,7 +27,7 @@ function App() {
 
       const res = await axios.post(
         // "http://localhost:5000/analyze",
-        "https://skilldna-backend.onrender.com/analyze",
+        "https://skilldna-backend-ice7.onrender.com//analyze",
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
