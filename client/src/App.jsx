@@ -20,21 +20,28 @@ function App() {
       const formData = new FormData();
       formData.append("username", username);
 
-      const skillArray = skills.split(",").map((s) => s.trim());
+      const skillArray = skills
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+
       formData.append("jobSkills", JSON.stringify(skillArray));
 
       if (file) formData.append("resume", file);
 
+      // ✅ FIXED API URL (NO DOUBLE SLASH)
       const res = await axios.post(
-        // "http://localhost:5000/analyze",
-        "https://skilldna-backend-ice7.onrender.com//analyze",
+        "https://skilldna-backend-ice7.onrender.com/analyze",
         formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
       );
 
       setData(res.data);
       setLoading(false);
     } catch (err) {
+      console.error("ERROR:", err); // 👈 helps debugging
       setError("⚠️ Failed to analyze.");
       setLoading(false);
     }
@@ -119,7 +126,7 @@ function App() {
             </div>
           </div>
 
-          {/* CHART */}
+          {/* LANGUAGES */}
           <div className="card chart">
             <h3>Languages</h3>
 
@@ -159,7 +166,7 @@ function App() {
                 <h4>Profile Summary</h4>
                 <p>
                   You are working with{" "}
-                  {Object.keys(languageCounts).join(", ")} technologies.
+                  {Object.keys(languageCounts).join(", ")}
                 </p>
 
                 <h4>Strengths</h4>
