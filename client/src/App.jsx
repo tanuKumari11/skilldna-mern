@@ -26,21 +26,23 @@ function App() {
       if (file) formData.append("resume", file);
 
       const res = await axios.post(
-        // "http://localhost:5000/analyze",
         "https://skilldna-backend-ice7.onrender.com/analyze",
         formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          timeout: 20000, // ✅ prevents early failure
+        }
       );
 
       setData(res.data);
-      setLoading(false);
     } catch (err) {
+      console.log(err); // 👈 IMPORTANT for debugging
       setError("⚠️ Failed to analyze.");
+    } finally {
       setLoading(false);
     }
   };
 
-  // Language count
   const languageCounts = data
     ? data.languages.reduce((acc, lang) => {
         acc[lang] = (acc[lang] || 0) + 1;
@@ -52,7 +54,6 @@ function App() {
 
   return (
     <div className="app">
-      {/* Sidebar */}
       <aside className="sidebar">
         <div className="logo">🚀 SkillDNA</div>
         <nav>
@@ -61,7 +62,6 @@ function App() {
         </nav>
       </aside>
 
-      {/* Main */}
       <main className="main">
         <div className="topbar">
           <h2>SkillDNA Analyzer</h2>
@@ -119,7 +119,7 @@ function App() {
             </div>
           </div>
 
-          {/* CHART */}
+          {/* LANGUAGES */}
           <div className="card chart">
             <h3>Languages</h3>
 
@@ -159,7 +159,7 @@ function App() {
                 <h4>Profile Summary</h4>
                 <p>
                   You are working with{" "}
-                  {Object.keys(languageCounts).join(", ")} technologies.
+                  {Object.keys(languageCounts).join(", ")}
                 </p>
 
                 <h4>Strengths</h4>

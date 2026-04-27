@@ -5,21 +5,28 @@ const axios = require("axios");
 
 const app = express();
 
-// Middleware
-app.use(cors({ origin: "*" }));
+// ✅ FIX 1: Proper CORS (IMPORTANT)
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"],
+  })
+);
+
 app.use(express.json());
 
-// File upload setup
+// ✅ FIX 2: Multer setup
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// Helper: Skill Gap Detection
+// ✅ Helper function
 function analyzeSkills(userSkills, githubLanguages) {
-  const user = userSkills.map(s => s.toLowerCase());
-  const github = githubLanguages.map(s => s.toLowerCase());
+  const user = userSkills.map((s) => s.toLowerCase());
+  const github = githubLanguages.map((s) => s.toLowerCase());
 
-  const matched = user.filter(skill => github.includes(skill));
-  const missing = user.filter(skill => !github.includes(skill));
+  const matched = user.filter((skill) => github.includes(skill));
+  const missing = user.filter((skill) => !github.includes(skill));
 
   const score = user.length
     ? Math.round((matched.length / user.length) * 100)
@@ -28,48 +35,69 @@ function analyzeSkills(userSkills, githubLanguages) {
   return { matched, missing, score };
 }
 
-// API Route
+// ✅ API ROUTE
 app.post("/analyze", upload.single("resume"), async (req, res) => {
   try {
     const { username } = req.body;
-    const jobSkills = JSON.parse(req.body.jobSkills || "[]");
+
+    // ✅ FIX 3: Safe JSON parsing
+    let jobSkills = [];
+    try {
+      jobSkills = JSON.parse(req.body.jobSkills || "[]");
+    } catch {
+      jobSkills = [];
+    }
 
     if (!username) {
       return res.status(400).json({ error: "Username required" });
     }
 
-    // Fetch GitHub repos
+    // ✅ FIX 4: GitHub API with headers (VERY IMPORTANT)
     const response = await axios.get(
-      `https://api.github.com/users/${username}/repos`
+      `https://api.github.com/users/${username}/repos`,
+      {
+        headers: {
+          "User-Agent": "SkillDNA-App",
+        },
+      }
     );
 
     const repos = response.data;
 
     // Extract languages
     let languages = [];
-    repos.forEach(repo => {
+    repos.forEach((repo) => {
       if (repo.language) languages.push(repo.language);
     });
 
-    // Skill Gap Analysis
-    const { matched, missing, score } = analyzeSkills(jobSkills, languages);
+    // Skill analysis
+    const { matched, missing, score } = analyzeSkills(
+      jobSkills,
+      languages
+    );
 
-    // Resume preview (dummy for now)
     let resumePreview = "No resume uploaded";
     if (req.file) {
       resumePreview = "Resume uploaded successfully";
     }
 
-    // Final Report
     const report = `
 Profile Summary:
 You are working with ${languages.join(", ") || "no major technologies"}.
 
 Strengths:
-${matched.length ? matched.map(s => `✔ Good in ${s}`).join("\n") : "No strong match found"}
+${
+  matched.length
+    ? matched.map((s) => `✔ Good in ${s}`).join("\n")
+    : "No strong match found"
+}
 
 Weakness:
-${missing.length ? missing.map(s => `✘ Missing ${s}`).join("\n") : "No major gaps"}
+${
+  missing.length
+    ? missing.map((s) => `✘ Missing ${s}`).join("\n")
+    : "No major gaps"
+}
 
 Suggestions:
 - Improve missing skills
@@ -85,21 +113,24 @@ Suggestions:
       matchedSkills: matched,
       missingSkills: missing,
       resumePreview,
-      report
+      report,
     });
-
   } catch (error) {
-    console.error(error.message);
-    res.status(500).json({ error: "Failed to analyze" });
+    console.error("❌ ERROR:", error.message);
+
+    res.status(500).json({
+      error: "Failed to analyze",
+      details: error.message, // 👈 helps debugging
+    });
   }
 });
 
-// Root test route
+// Root route
 app.get("/", (req, res) => {
   res.send("SkillDNA Backend Running 🚀");
 });
 
-// PORT FIX (IMPORTANT FOR DEPLOY)
+// PORT FIX
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
