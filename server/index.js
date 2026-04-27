@@ -54,7 +54,7 @@ app.post("/analyze", upload.single("resume"), async (req, res) => {
 
     // ✅ FIX 4: GitHub API with headers (VERY IMPORTANT)
     const response = await axios.get(
-      `https://api.github.com/users/${username}/repos`,
+      `https://api.github.com/users/${tanuKumari11}/repos`,
       {
         headers: {
           "User-Agent": "SkillDNA-App",
