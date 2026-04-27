@@ -276,18 +276,18 @@ function App() {
       if (file) formData.append("resume", file);
 
       const res = await axios.post(
-        "https://skilldna-backend-ice7.onrender.com/analyze",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-          timeout: 20000, // ✅ prevents early failure
-        }
-      );
+  "https://skilldna-backend-ice7.onrender.com/analyze",
+  formData,
+  {
+    headers: { "Content-Type": "multipart/form-data" },
+    timeout: 30000, // 🔥 increase timeout (CRITICAL)
+  }
+);
 
       setData(res.data);
     } catch (err) {
-      console.log(err); // 👈 IMPORTANT for debugging
-      setError("⚠️ Failed to analyze.");
+  console.log("ERROR:", err.response?.data || err.message);
+  setError("⚠️ Failed to analyze.");
     } finally {
       setLoading(false);
     }
