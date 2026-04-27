@@ -287,7 +287,7 @@ function App() {
       setData(res.data);
     } catch (err) {
   console.log("ERROR:", err.response?.data || err.message);
-  setError("⚠️ Failed to analyze.");
+  setError(err.response?.data?.message || "⚠️ Failed to analyze.");
     } finally {
       setLoading(false);
     }

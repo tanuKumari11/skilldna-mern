@@ -62,6 +62,7 @@ try {
   {
     headers: {
       "User-Agent": "SkillDNA-App",
+      Authorization: `Bearer ${process.env.GITHUB_TOKEN}`, // 🔥 FIX
     },
   }
 );
@@ -140,6 +141,29 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log("Server running on port", PORT);
 });
+
+async function fetchRepos(username) {
+  try {
+    return await axios.get(
+      `https://api.github.com/users/${username}/repos`,
+      {
+        headers: { "User-Agent": "SkillDNA-App" },
+        timeout: 20000,
+      }
+    );
+  } catch (err) {
+    console.log("Retrying GitHub API...");
+    return await axios.get(
+      `https://api.github.com/users/${username}/repos`,
+      {
+        headers: { "User-Agent": "SkillDNA-App" },
+        timeout: 20000,
+      }
+    );
+  }
+}
+const response = await fetchRepos(username);
+
 
 
 
